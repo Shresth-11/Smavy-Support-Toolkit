@@ -74,6 +74,7 @@ let removedDefaultIds = new Set();
 /* Major cities mapping for polished city & country display */
 const KNOWN_CITIES = {
   "Asia/Kolkata": { city: "India (IST)", country: "India" },
+  "Asia/Calcutta": { city: "India (IST)", country: "India" },
   "Asia/Dubai": { city: "Dubai", country: "United Arab Emirates" },
   "Asia/Tokyo": { city: "Tokyo", country: "Japan" },
   "Asia/Singapore": { city: "Singapore (GMT+8)", country: "Singapore" },
@@ -213,6 +214,12 @@ const SEARCH_ALIASES = {
     "madras", "pune", "ahmedabad", "jaipur", "surat", "lucknow", "gurgaon", 
     "gurugram", "noida", "chandigarh", "indore"
   ],
+  "Asia/Calcutta": [
+    "ist", "india", "indian", "kolkata", "calcutta", "delhi", "new delhi", 
+    "mumbai", "bombay", "bangalore", "bengaluru", "hyderabad", "chennai", 
+    "madras", "pune", "ahmedabad", "jaipur", "surat", "lucknow", "gurgaon", 
+    "gurugram", "noida", "chandigarh", "indore"
+  ],
   "Europe/London": [
     "gmt", "bst", "uk", "united kingdom", "london", "england", "britain", "great britain"
   ],
@@ -296,6 +303,12 @@ function getFilteredMatches(query) {
     const idLower = item.id.toLowerCase();
     const aliases = SEARCH_ALIASES[item.id] || [];
 
+    // Special check for India (IST)
+    const isIndiaTz = item.id === "Asia/Kolkata" || item.id === "Asia/Calcutta";
+    if (isIndiaTz && (query === "ist" || query === "india" || query === "indian" || query === "delhi" || query === "mumbai" || query === "kolkata" || query === "calcutta" || query === "bangalore")) {
+      score += 1000; // Absolute top priority!
+    }
+
     // 1. Alias scoring (World Time Buddy style)
     if (aliases.includes(query)) {
       score += 500; // Perfect match for alias like "ist", "gmt", "india", "delhi", "london"
@@ -326,12 +339,12 @@ function getFilteredMatches(query) {
 
     // 5. Penalty for US Indiana towns (America/Indiana/*) unless explicitly searching Indiana
     if (item.id.startsWith("America/Indiana/") && !query.includes("indiana") && !query.includes("napolis")) {
-      score -= 300;
+      score -= 500;
     }
 
     // 6. Penalty for Indian Ocean territories (Indian/*) unless explicitly searching ocean/island
     if (item.id.startsWith("Indian/") && !query.includes("ocean") && !query.includes("island")) {
-      score -= 300;
+      score -= 500;
     }
 
     if (score > 0) {
