@@ -607,7 +607,8 @@ if (hourInput) {
 }
 
 if (minInput) {
-  for (let m = 0; m < 60; m += 5) {
+  minInput.innerHTML = '';
+  for (let m = 0; m < 60; m++) {
     const o = document.createElement('option');
     o.value = m;
     o.textContent = String(m).padStart(2, '0');
@@ -642,6 +643,9 @@ function getOffsetMinutes(tz, date) {
 function convert() {
   if (!dateInput || !hourInput || !minInput || !ampmInput || !sourceTz || !results) return;
 
+  const liveToggle = document.getElementById('liveClockToggle');
+  const isLive = liveToggle && liveToggle.checked;
+
   let currentSourceTz = sourceTz.value || "Asia/Kolkata";
   try {
     Intl.DateTimeFormat(undefined, { timeZone: currentSourceTz });
@@ -649,17 +653,22 @@ function convert() {
     currentSourceTz = "Asia/Kolkata";
   }
 
-  const [y, m, d] = dateInput.value.split('-').map(Number);
-  let hh = Number(hourInput.value) % 12;
-  if (ampmInput.value === 'PM') hh += 12;
-  const mm = Number(minInput.value);
+  let instant;
+  if (isLive) {
+    instant = new Date();
+  } else {
+    const [y, m, d] = dateInput.value.split('-').map(Number);
+    let hh = Number(hourInput.value) % 12;
+    if (ampmInput.value === 'PM') hh += 12;
+    const mm = Number(minInput.value);
 
-  let guess = Date.UTC(y, m - 1, d, hh, mm);
-  for (let i = 0; i < 2; i++) {
-    const off = getOffsetMinutes(currentSourceTz, new Date(guess));
-    guess = Date.UTC(y, m - 1, d, hh, mm) - off * 60000;
+    let guess = Date.UTC(y, m - 1, d, hh, mm);
+    for (let i = 0; i < 2; i++) {
+      const off = getOffsetMinutes(currentSourceTz, new Date(guess));
+      guess = Date.UTC(y, m - 1, d, hh, mm) - off * 60000;
+    }
+    instant = new Date(guess);
   }
-  const instant = new Date(guess);
 
   results.innerHTML = '';
   const allZones = ZONES.filter(z => !removedDefaultIds.has(z.id)).concat(customZones);
@@ -683,12 +692,19 @@ function convert() {
         diffStr = `${sign}${total}h ${diffMin > 0 ? 'ahead' : 'behind'}`;
       }
 
-      const dtf = new Intl.DateTimeFormat('en-US', {
+      const dtfOptions = {
         timeZone: z.id, weekday: 'short', month: 'short', day: 'numeric',
         hour: 'numeric', minute: '2-digit', hour12: true
-      });
+      };
+      if (isLive) {
+        dtfOptions.second = '2-digit';
+      }
+
+      const dtf = new Intl.DateTimeFormat('en-US', dtfOptions);
       const parts = dtf.formatToParts(instant).reduce((a, p) => { a[p.type] = (a[p.type] || '') + p.value; return a; }, {});
-      const timeStr = `${parts.hour}:${parts.minute} ${parts.dayPeriod}`;
+      const timeStr = isLive 
+        ? `${parts.hour}:${parts.minute}:${parts.second} ${parts.dayPeriod}`
+        : `${parts.hour}:${parts.minute} ${parts.dayPeriod}`;
       const dateStr = `${parts.weekday}, ${parts.month} ${parts.day}`;
 
       const srcDateStr = new Intl.DateTimeFormat('en-US', { timeZone: currentSourceTz, weekday: 'short', month: 'short', day: 'numeric' }).format(instant);
@@ -1100,7 +1116,7 @@ function syncLiveClock() {
   if (dateInput) dateInput.value = now.toISOString().slice(0, 10);
   if (hourInput && minInput && ampmInput) {
     let h = now.getHours();
-    const m = Math.floor(now.getMinutes() / 5) * 5;
+    const m = now.getMinutes();
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     hourInput.value = h;
@@ -1120,7 +1136,7 @@ if (liveClockToggle) {
     setInputsDisabled(isLive);
     if (isLive) {
       syncLiveClock();
-      liveTimer = setInterval(syncLiveClock, 5000);
+      liveTimer = setInterval(syncLiveClock, 1000);
     } else {
       if (liveTimer) clearInterval(liveTimer);
       convert();
