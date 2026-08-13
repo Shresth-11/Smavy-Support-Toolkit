@@ -677,11 +677,10 @@ function convert() {
       } else {
         const sign = diffMin > 0 ? '+' : '-';
         const abs = Math.abs(diffMin);
-        const h = Math.floor(abs / 60);
-        const m = abs % 60;
-        diffStr = `${sign}${h}${m ? '.' + Math.round((m/60)*10)/10 : ''}h`;
-        if (diffMin > 0) diffStr += ' ahead';
-        else diffStr += ' behind';
+        const hours = Math.floor(abs / 60);
+        const mins = abs % 60;
+        const total = mins ? (hours + Math.round((mins / 60) * 10) / 10) : hours;
+        diffStr = `${sign}${total}h ${diffMin > 0 ? 'ahead' : 'behind'}`;
       }
 
       const dtf = new Intl.DateTimeFormat('en-US', {
@@ -698,18 +697,18 @@ function convert() {
       const card = document.createElement('div');
       card.className = 'card' + (z.id === currentSourceTz ? ' source' : '') + (dayShift ? ' dayshift' : '');
       
-      const swapBtnHtml = z.id !== currentSourceTz ? `<button class="set-source-btn" data-id="${z.id}" title="Set as Given In timezone">Make Base</button>` : '';
+      const makeBaseHtml = z.id !== currentSourceTz ? `<button class="make-base-btn" data-id="${z.id}" title="Set as Given In timezone">Make Base</button>` : '';
 
       card.innerHTML = `
         <button class="remove" data-id="${z.id}" title="Remove">✕</button>
-        <div class="card-header-row">
-          <div class="label">${z.label}</div>
-          <span class="offset-badge">${diffStr}</span>
-        </div>
+        <div class="label">${z.label}</div>
         <div class="time">${timeStr}</div>
-        <div class="card-header-row" style="margin-top:4px;margin-bottom:0;">
+        <div class="card-footer">
           <div class="date">${dateStr}${dayShift ? ' (diff. day)' : ''}</div>
-          ${swapBtnHtml}
+          <div class="card-footer-right">
+            <span class="offset-tag">${diffStr}</span>
+            ${makeBaseHtml}
+          </div>
         </div>
       `;
       results.appendChild(card);
@@ -738,7 +737,7 @@ function convert() {
     });
   });
 
-  results.querySelectorAll('.set-source-btn').forEach(btn => {
+  results.querySelectorAll('.make-base-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
       sourceTz.value = id;

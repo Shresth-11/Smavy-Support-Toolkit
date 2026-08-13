@@ -436,8 +436,8 @@ select:focus, input:focus, textarea:focus {
 
 .card {
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 14px 16px;
+  border-radius: 12px;
+  padding: 16px 18px;
   background: var(--paper);
   position: relative;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -445,7 +445,7 @@ select:focus, input:focus, textarea:focus {
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(60, 44, 30, 0.08);
+  box-shadow: 0 6px 16px rgba(60, 44, 30, 0.08);
 }
 
 .card.source {
@@ -459,15 +459,25 @@ select:focus, input:focus, textarea:focus {
   letter-spacing: .06em;
   color: var(--ink);
   font-weight: 800;
-  padding-right: 20px;
+  padding-right: 28px;
 }
 
 .card .time {
   font-family: 'Karla', Arial, sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin: 4px 0;
+  margin: 6px 0 10px;
   color: var(--ink);
+}
+
+.card .card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line-soft);
 }
 
 .card .date {
@@ -480,19 +490,61 @@ select:focus, input:focus, textarea:focus {
   font-weight: 700;
 }
 
+.card-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.offset-tag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: rgba(138, 100, 22, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(138, 100, 22, 0.2);
+  white-space: nowrap;
+}
+
+.card.source .offset-tag {
+  color: var(--rust);
+  background: rgba(180, 80, 31, 0.15);
+  border-color: rgba(180, 80, 31, 0.3);
+}
+
+.make-base-btn {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 2px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.make-base-btn:hover {
+  background: var(--rust);
+  color: #ffffff;
+  border-color: var(--rust);
+}
+
 .card .remove {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   background: transparent;
   border: none;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   line-height: 1;
   padding: 4px 6px;
   border-radius: 4px;
   transition: background 0.15s ease, color 0.15s ease;
+  z-index: 5;
 }
 
 .card .remove:hover {
@@ -840,56 +892,6 @@ select:focus, input:focus, textarea:focus {
   border-radius: 12px;
   margin-left: 6px;
   vertical-align: middle;
-}
-
-/* Card Enhancements */
-.card .card-header-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.card .offset-badge {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: var(--gold);
-  background: rgba(138, 100, 22, 0.1);
-  padding: 2px 8px;
-  border-radius: 12px;
-  border: 1px solid rgba(138, 100, 22, 0.2);
-  white-space: nowrap;
-}
-
-.card.source .offset-badge {
-  color: var(--rust);
-  background: rgba(180, 80, 31, 0.15);
-  border-color: rgba(180, 80, 31, 0.3);
-}
-
-.card .card-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.card .set-source-btn {
-  font-size: 0.7rem;
-  font-weight: 700;
-  background: var(--card);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  padding: 3px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.card .set-source-btn:hover {
-  background: var(--rust);
-  color: #ffffff;
-  border-color: var(--rust);
 }
 
 /* Toast Banner */
