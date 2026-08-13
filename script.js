@@ -210,19 +210,39 @@ function getFilteredMatches(query) {
   query = query.trim().toLowerCase();
   if (!query) return zoneDataset.slice(0, 14);
 
-  const t1 = []; // Display starts with query (Highest priority, e.g. "India (IST)")
-  const t2 = []; // KNOWN_CITIES match
-  const t3 = []; // Normal match
-  const t4 = []; // US Indiana cities fallback
+  const t0 = []; // Exact or Primary Known Cities (e.g. India (IST), UK, USA, Tokyo, Sydney...)
+  const t1 = []; // Display starts with query word boundaries (e.g. "India ...", "London ...")
+  const t2 = []; // KNOWN_CITIES match anywhere
+  const t3 = []; // Other normal matches
+  const t4 = []; // US Indiana cities or Indian Ocean islands fallback unless explicitly typed
 
   zoneDataset.forEach(item => {
     const dispLower = item.display.toLowerCase();
-    if (dispLower.startsWith(query)) {
-      t1.push(item);
-    } else if (KNOWN_CITIES[item.id] && item.searchKey.includes(query)) {
-      t2.push(item);
+    const isKnown = !!KNOWN_CITIES[item.id];
+
+    // Check for US Indiana cities or Indian Ocean territory
+    const isIndianaUs = item.id.startsWith("America/Indiana/");
+    const isIndianOcean = item.id.startsWith("Indian/");
+
+    if (isKnown && (dispLower.includes(query) || item.searchKey.includes(query))) {
+      // High priority for curated primary cities
+      if (item.id === "Asia/Kolkata" && (query.includes("ind") || query.includes("ist") || query.includes("kol") || query.includes("del") || query.includes("mum"))) {
+        t0.unshift(item); // Put India (IST) at absolute top!
+      } else if (dispLower.startsWith(query) || item.searchKey.startsWith(query)) {
+        t0.push(item);
+      } else {
+        t2.push(item);
+      }
+    } else if (dispLower.startsWith(query) || dispLower.split(/[\s,()—]+/).some(w => w.startsWith(query))) {
+      if (isIndianaUs && !query.includes("indiana") && !query.includes("napolis")) {
+        t4.push(item);
+      } else if (isIndianOcean && !query.includes("ocean") && !query.includes("island")) {
+        t4.push(item);
+      } else {
+        t1.push(item);
+      }
     } else if (item.searchKey.includes(query)) {
-      if (item.id.startsWith("America/Indiana/") && !query.includes("indiana")) {
+      if ((isIndianaUs && !query.includes("indiana")) || (isIndianOcean && !query.includes("ocean"))) {
         t4.push(item);
       } else {
         t3.push(item);
@@ -230,7 +250,15 @@ function getFilteredMatches(query) {
     }
   });
 
-  return [...t1, ...t2, ...t3, ...t4].slice(0, 14);
+  // Deduplicate items keeping order
+  const resultsMap = new Map();
+  [...t0, ...t1, ...t2, ...t3, ...t4].forEach(item => {
+    if (!resultsMap.has(item.id)) {
+      resultsMap.set(item.id, item);
+    }
+  });
+
+  return Array.from(resultsMap.values()).slice(0, 14);
 }
 
 function renderAutocomplete(query) {
@@ -517,10 +545,6 @@ function getOffsetMinutes(tz, date) {
 function convert() {
   if (!dateInput || !hourInput || !minInput || !ampmInput || !sourceTz || !results) return;
 
-  const liveToggle = document.getElementById('liveClockToggle');
-  const isLive = liveToggle && liveToggle.checked;
-
-  let instant;
   let currentSourceTz = sourceTz.value || "Asia/Kolkata";
   try {
     Intl.DateTimeFormat(undefined, { timeZone: currentSourceTz });
@@ -528,21 +552,17 @@ function convert() {
     currentSourceTz = "Asia/Kolkata";
   }
 
-  if (isLive) {
-    instant = new Date();
-  } else {
-    const [y, m, d] = dateInput.value.split('-').map(Number);
-    let hh = Number(hourInput.value) % 12;
-    if (ampmInput.value === 'PM') hh += 12;
-    const mm = Number(minInput.value);
+  const [y, m, d] = dateInput.value.split('-').map(Number);
+  let hh = Number(hourInput.value) % 12;
+  if (ampmInput.value === 'PM') hh += 12;
+  const mm = Number(minInput.value);
 
-    let guess = Date.UTC(y, m - 1, d, hh, mm);
-    for (let i = 0; i < 2; i++) {
-      const off = getOffsetMinutes(currentSourceTz, new Date(guess));
-      guess = Date.UTC(y, m - 1, d, hh, mm) - off * 60000;
-    }
-    instant = new Date(guess);
+  let guess = Date.UTC(y, m - 1, d, hh, mm);
+  for (let i = 0; i < 2; i++) {
+    const off = getOffsetMinutes(currentSourceTz, new Date(guess));
+    guess = Date.UTC(y, m - 1, d, hh, mm) - off * 60000;
   }
+  const instant = new Date(guess);
 
   results.innerHTML = '';
   const allZones = ZONES.filter(z => !removedDefaultIds.has(z.id)).concat(customZones);
@@ -569,10 +589,10 @@ function convert() {
 
       const dtf = new Intl.DateTimeFormat('en-US', {
         timeZone: z.id, weekday: 'short', month: 'short', day: 'numeric',
-        hour: 'numeric', minute: '2-digit', second: isLive ? '2-digit' : undefined, hour12: true
+        hour: 'numeric', minute: '2-digit', hour12: true
       });
       const parts = dtf.formatToParts(instant).reduce((a, p) => { a[p.type] = (a[p.type] || '') + p.value; return a; }, {});
-      const timeStr = isLive ? `${parts.hour}:${parts.minute}:${parts.second} ${parts.dayPeriod}` : `${parts.hour}:${parts.minute} ${parts.dayPeriod}`;
+      const timeStr = `${parts.hour}:${parts.minute} ${parts.dayPeriod}`;
       const dateStr = `${parts.weekday}, ${parts.month} ${parts.day}`;
 
       const srcDateStr = new Intl.DateTimeFormat('en-US', { timeZone: currentSourceTz, weekday: 'short', month: 'short', day: 'numeric' }).format(instant);
@@ -974,14 +994,38 @@ let liveTimer = null;
 if (liveClockToggle) {
   liveClockToggle.addEventListener('change', () => {
     const isLive = liveClockToggle.checked;
-    const dateWrap = document.getElementById('dateFieldWrap');
-    const timeWrap = document.getElementById('timeFieldWrap');
-    if (dateWrap) dateWrap.style.opacity = isLive ? '0.45' : '1';
-    if (timeWrap) timeWrap.style.opacity = isLive ? '0.45' : '1';
-
     if (isLive) {
+      const now = new Date();
+      if (dateInput) dateInput.value = now.toISOString().slice(0, 10);
+      if (hourInput && minInput && ampmInput) {
+        let h = now.getHours();
+        const m = Math.floor(now.getMinutes() / 5) * 5;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        hourInput.value = h;
+        minInput.value = m;
+        ampmInput.value = ampm;
+      }
       convert();
-      liveTimer = setInterval(convert, 1000);
+      liveTimer = setInterval(() => {
+        // If user is not currently focusing on inputs, update live time once a minute
+        if (liveClockToggle.checked &&
+            document.activeElement !== dateInput &&
+            document.activeElement !== hourInput &&
+            document.activeElement !== minInput &&
+            document.activeElement !== ampmInput) {
+          const liveNow = new Date();
+          if (dateInput) dateInput.value = liveNow.toISOString().slice(0, 10);
+          let h = liveNow.getHours();
+          const m = Math.floor(liveNow.getMinutes() / 5) * 5;
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12 || 12;
+          if (hourInput) hourInput.value = h;
+          if (minInput) minInput.value = m;
+          if (ampmInput) ampmInput.value = ampm;
+          convert();
+        }
+      }, 30000);
     } else {
       if (liveTimer) clearInterval(liveTimer);
       convert();
