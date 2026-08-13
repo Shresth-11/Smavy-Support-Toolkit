@@ -1083,6 +1083,33 @@ document.querySelectorAll('.preset-chip').forEach(chip => {
   });
 });
 
+function setInputsDisabled(disabled) {
+  if (dateInput) dateInput.disabled = disabled;
+  if (hourInput) hourInput.disabled = disabled;
+  if (minInput) minInput.disabled = disabled;
+  if (ampmInput) ampmInput.disabled = disabled;
+  
+  const dateWrap = document.getElementById('dateFieldWrap');
+  const timeWrap = document.getElementById('timeFieldWrap');
+  if (dateWrap) dateWrap.style.opacity = disabled ? '0.55' : '1';
+  if (timeWrap) timeWrap.style.opacity = disabled ? '0.55' : '1';
+}
+
+function syncLiveClock() {
+  const now = new Date();
+  if (dateInput) dateInput.value = now.toISOString().slice(0, 10);
+  if (hourInput && minInput && ampmInput) {
+    let h = now.getHours();
+    const m = Math.floor(now.getMinutes() / 5) * 5;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    hourInput.value = h;
+    minInput.value = m;
+    ampmInput.value = ampm;
+  }
+  convert();
+}
+
 // Live clock toggle listener
 const liveClockToggle = document.getElementById('liveClockToggle');
 let liveTimer = null;
@@ -1090,38 +1117,10 @@ let liveTimer = null;
 if (liveClockToggle) {
   liveClockToggle.addEventListener('change', () => {
     const isLive = liveClockToggle.checked;
+    setInputsDisabled(isLive);
     if (isLive) {
-      const now = new Date();
-      if (dateInput) dateInput.value = now.toISOString().slice(0, 10);
-      if (hourInput && minInput && ampmInput) {
-        let h = now.getHours();
-        const m = Math.floor(now.getMinutes() / 5) * 5;
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
-        hourInput.value = h;
-        minInput.value = m;
-        ampmInput.value = ampm;
-      }
-      convert();
-      liveTimer = setInterval(() => {
-        // If user is not currently focusing on inputs, update live time once a minute
-        if (liveClockToggle.checked &&
-            document.activeElement !== dateInput &&
-            document.activeElement !== hourInput &&
-            document.activeElement !== minInput &&
-            document.activeElement !== ampmInput) {
-          const liveNow = new Date();
-          if (dateInput) dateInput.value = liveNow.toISOString().slice(0, 10);
-          let h = liveNow.getHours();
-          const m = Math.floor(liveNow.getMinutes() / 5) * 5;
-          const ampm = h >= 12 ? 'PM' : 'AM';
-          h = h % 12 || 12;
-          if (hourInput) hourInput.value = h;
-          if (minInput) minInput.value = m;
-          if (ampmInput) ampmInput.value = ampm;
-          convert();
-        }
-      }, 30000);
+      syncLiveClock();
+      liveTimer = setInterval(syncLiveClock, 5000);
     } else {
       if (liveTimer) clearInterval(liveTimer);
       convert();
