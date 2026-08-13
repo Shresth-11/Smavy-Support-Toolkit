@@ -608,7 +608,7 @@ if (hourInput) {
 
 if (minInput) {
   minInput.innerHTML = '';
-  for (let m = 0; m < 60; m++) {
+  for (let m = 0; m < 60; m += 5) {
     const o = document.createElement('option');
     o.value = m;
     o.textContent = String(m).padStart(2, '0');
@@ -1116,7 +1116,7 @@ function syncLiveClock() {
   if (dateInput) dateInput.value = now.toISOString().slice(0, 10);
   if (hourInput && minInput && ampmInput) {
     let h = now.getHours();
-    const m = now.getMinutes();
+    const m = Math.floor(now.getMinutes() / 5) * 5;
     const ampm = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
     hourInput.value = h;
