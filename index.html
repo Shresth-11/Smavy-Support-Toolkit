@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Smavy Support Toolkit</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ===== SPLASH SCREEN ===== -->
+  <div id="splash-screen">
+    <div class="splash-content">
+      <div class="splash-logo-wrap">
+        <div class="splash-glow"></div>
+        <svg class="splash-icon-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="48" fill="#3c2c1e" />
+          <path d="M10 75 Q 30 40 50 75 T 90 75" stroke="#e9c9a0" stroke-width="4" fill="none" />
+          <circle cx="70" cy="32" r="14" fill="#f1ddc4" />
+          <path d="M25 82 L48 38 L60 58 L78 28 L95 82 Z" fill="#b4501f" />
+          <path d="M48 38 L55 50 L41 55 Z" fill="#f7ecd9" opacity="0.9" />
+          <path d="M78 28 L84 40 L72 45 Z" fill="#f7ecd9" opacity="0.9" />
+        </svg>
+      </div>
+      <h1 class="splash-title">Smavy Support</h1>
+      <div class="splash-subtitle">Timezone Converter & Support Message Templates</div>
+      <div class="splash-progress-track">
+        <div class="splash-progress-bar" id="splash-progress-bar"></div>
+      </div>
+      <div class="splash-footer-note">Click anywhere to skip</div>
+    </div>
+  </div>
+
+  <!-- ===== HEADER BANNER ===== -->
+  <div class="banner">
+    <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#e9c9a0"/>
+          <stop offset="100%" stop-color="#f4dfc0"/>
+        </linearGradient>
+        <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#8a3f1f"/>
+          <stop offset="100%" stop-color="#b4501f"/>
+        </linearGradient>
+      </defs>
+      <rect width="900" height="220" fill="url(#sky)"/>
+      <circle cx="740" cy="60" r="46" fill="#f1ddc4"/>
+      <path d="M0 150 Q60 130 130 150 T260 150 T400 150 T540 150 T680 150 T900 150 V220 H0 Z" fill="#f7ecd9" opacity="0.55"/>
+      <path d="M300 210 L430 40 L470 90 L560 20 L700 210 Z" fill="url(#mtn)"/>
+      <path d="M430 40 L455 70 L405 95 Z" fill="#f7ecd9" opacity="0.85"/>
+      <path d="M560 20 L590 60 L525 95 Z" fill="#f7ecd9" opacity="0.85"/>
+      <path d="M0 175 Q80 160 170 178 T340 175 T520 180 T700 172 T900 178 V220 H0 Z" fill="#3c2c1e" opacity="0.85"/>
+    </svg>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="wrap">
+    <h1 class="header-title">
+      <svg class="header-logo-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="48" fill="#3c2c1e" />
+        <circle cx="68" cy="34" r="14" fill="#f1ddc4" />
+        <path d="M15 80 L45 36 L58 56 L76 28 L92 80 Z" fill="#b4501f" />
+        <path d="M45 36 L52 48 L39 52 Z" fill="#f7ecd9" opacity="0.9" />
+        <path d="M76 28 L82 40 L70 44 Z" fill="#f7ecd9" opacity="0.9" />
+      </svg>
+      <span>Smavy Support Toolkit</span>
+    </h1>
+    <div class="sub">Time zone conversion and message templates in one place.</div>
+
+    <div class="tabs">
+      <div class="tab active" data-view="converter">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Time Converter
+      </div>
+      <div class="tab" data-view="templates">
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Message Templates
+      </div>
+    </div>
+
+    <!-- ===== TIME CONVERTER VIEW ===== -->
+    <div class="view active" id="view-converter">
+      <div class="panel">
+        <div class="panel-header-row">
+          <span class="panel-subtitle-badge">Mode & Schedule Settings</span>
+          <label class="toggle-wrap" title="Toggle real-time live clock mode">
+            <input type="checkbox" id="liveClockToggle">
+            <span class="toggle-slider"></span>
+            <span class="toggle-text"><span class="live-dot"></span> Live Clock Mode</span>
+          </label>
+        </div>
+        <div class="row">
+          <div class="field" id="dateFieldWrap">
+            <label for="dateInput">
+              <span class="label-with-icon">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Date
+              </span>
+            </label>
+            <input type="date" id="dateInput">
+          </div>
+          <div class="field" id="timeFieldWrap">
+            <label>
+              <span class="label-with-icon">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Time
+              </span>
+            </label>
+            <div class="row" style="gap:6px;">
+              <select id="hourInput" style="flex:1;" aria-label="Hour"></select>
+              <select id="minInput" style="flex:1;" aria-label="Minute"></select>
+              <select id="ampmInput" style="flex:1;" aria-label="AM or PM">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="field autocomplete-wrapper" style="min-width:200px;">
+            <label for="sourceSearch">
+              <span class="label-with-icon">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Given in
+              </span>
+            </label>
+            <input type="text" id="sourceSearch" placeholder="Search given timezone..." autocomplete="off">
+            <input type="hidden" id="sourceTz" value="Asia/Kolkata">
+            <div id="source-autocomplete-dropdown" class="autocomplete-dropdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <label for="zoneSearch">
+          <span class="label-with-icon">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Add a place or timezone
+          </span>
+        </label>
+        <div class="row">
+          <div class="field autocomplete-wrapper" style="min-width:220px;">
+            <input type="text" id="zoneSearch" placeholder="e.g. Tokyo, Berlin, London, Dubai..." autocomplete="off">
+            <div id="autocomplete-dropdown" class="autocomplete-dropdown"></div>
+          </div>
+          <button class="copybtn" id="addZoneBtn" type="button" style="flex:0 0 auto;">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+        </div>
+
+        <!-- Quick Presets Pills -->
+        <div class="quick-presets-section">
+          <span class="preset-label">Quick Add:</span>
+          <div class="preset-pills" id="presetPills">
+            <button class="preset-chip" data-id="Europe/London">+ London</button>
+            <button class="preset-chip" data-id="Asia/Tokyo">+ Tokyo</button>
+            <button class="preset-chip" data-id="Australia/Sydney">+ Sydney</button>
+            <button class="preset-chip" data-id="Asia/Dubai">+ Dubai</button>
+            <button class="preset-chip" data-id="America/New_York">+ New York</button>
+            <button class="preset-chip" data-id="Asia/Singapore">+ Singapore</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="results" id="results"></div>
+    </div>
+
+    <!-- ===== MESSAGE TEMPLATES VIEW ===== -->
+    <div class="view" id="view-templates">
+      <div class="panel">
+        <label for="templateSearch">
+          <span class="label-with-icon">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </span>
+        </label>
+        <div class="search-input-wrap">
+          <input type="text" id="templateSearch" placeholder="Type to filter, e.g. 'no show', 'reschedule'...">
+          <button class="clear-search-btn" id="clearSearchBtn" type="button" title="Clear search">✕</button>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="category-chips-wrap" id="categoryChipsWrap">
+          <button class="cat-chip active" data-cat="all">All Templates</button>
+          <button class="cat-chip" data-cat="parent">Parents</button>
+          <button class="cat-chip" data-cat="tutor">Tutors</button>
+          <button class="cat-chip" data-cat="attendance">Attendance & Reports</button>
+          <button class="cat-chip" data-cat="guide">Instructions & Help</button>
+        </div>
+
+        <label>
+          <span class="label-with-icon">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Situation <span class="tpl-count-badge" id="tplCountBadge"></span>
+          </span>
+        </label>
+        <div id="templateList" style="border:1px solid var(--line);border-radius:8px;max-height:220px;overflow-y:auto;margin-bottom:14px;background:#fffdf7;"></div>
+        <div id="fields"></div>
+      </div>
+      <div class="panel">
+        <div class="message-header-row">
+          <label for="output" style="margin-bottom:0;">
+            <span class="label-with-icon">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Message Preview
+            </span>
+          </label>
+          <div class="message-actions">
+            <span class="copied" id="copiedMsg"></span>
+            <button class="copybtn" onclick="copyOut()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy message
+            </button>
+          </div>
+        </div>
+        <textarea id="output" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Banner -->
+  <div id="toast" class="toast-banner">
+    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastText">Message copied to clipboard!</span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
