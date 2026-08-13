@@ -206,59 +206,143 @@ const addZoneBtn = document.getElementById('addZoneBtn');
 const dropdownEl = document.getElementById('autocomplete-dropdown');
 let highlightedIndex = -1;
 
+const SEARCH_ALIASES = {
+  "Asia/Kolkata": [
+    "ist", "india", "indian", "kolkata", "calcutta", "delhi", "new delhi", 
+    "mumbai", "bombay", "bangalore", "bengaluru", "hyderabad", "chennai", 
+    "madras", "pune", "ahmedabad", "jaipur", "surat", "lucknow", "gurgaon", 
+    "gurugram", "noida", "chandigarh", "indore"
+  ],
+  "Europe/London": [
+    "gmt", "bst", "uk", "united kingdom", "london", "england", "britain", "great britain"
+  ],
+  "America/New_York": [
+    "et", "est", "edt", "eastern", "new york", "ny", "nyc", "washington", "dc", "boston", "miami", "atlanta"
+  ],
+  "America/Chicago": [
+    "ct", "cst", "cdt", "central", "chicago", "dallas", "houston", "austin"
+  ],
+  "America/Los_Angeles": [
+    "pt", "pst", "pdt", "pacific", "los angeles", "la", "san francisco", "sf", "seattle", "california"
+  ],
+  "America/Denver": [
+    "mt", "mst", "mdt", "mountain", "denver", "salt lake city"
+  ],
+  "America/Phoenix": [
+    "phoenix", "arizona"
+  ],
+  "Australia/Sydney": [
+    "aest", "aedt", "sydney", "melbourne", "australia", "nsw", "vic"
+  ],
+  "Australia/Brisbane": [
+    "brisbane", "queensland"
+  ],
+  "Australia/Perth": [
+    "awst", "perth"
+  ],
+  "Australia/Adelaide": [
+    "acst", "acdt", "adelaide"
+  ],
+  "Asia/Riyadh": [
+    "ast", "saudi", "saudi arabia", "riyadh", "jeddah", "mecca"
+  ],
+  "Asia/Dubai": [
+    "gst", "dubai", "uae", "united arab emirates", "abu dhabi"
+  ],
+  "Asia/Singapore": [
+    "sgt", "singapore", "sg"
+  ],
+  "Asia/Tokyo": [
+    "jst", "tokyo", "japan"
+  ],
+  "Europe/Berlin": [
+    "cet", "cest", "berlin", "germany", "frankfurt", "munich"
+  ],
+  "Europe/Paris": [
+    "paris", "france"
+  ],
+  "Asia/Hong_Kong": [
+    "hkt", "hong kong", "hk"
+  ],
+  "Asia/Shanghai": [
+    "cst", "china", "shanghai", "beijing"
+  ],
+  "Asia/Seoul": [
+    "kst", "seoul", "korea"
+  ],
+  "Asia/Bangkok": [
+    "ict", "bangkok", "thailand"
+  ],
+  "America/Toronto": [
+    "toronto", "canada", "ontario"
+  ],
+  "America/Vancouver": [
+    "vancouver", "bc"
+  ],
+  "Pacific/Auckland": [
+    "nzst", "nzdt", "auckland", "new zealand", "nz"
+  ]
+};
+
 function getFilteredMatches(query) {
   query = query.trim().toLowerCase();
   if (!query) return zoneDataset.slice(0, 14);
 
-  const t0 = []; // Exact or Primary Known Cities (e.g. India (IST), UK, USA, Tokyo, Sydney...)
-  const t1 = []; // Display starts with query word boundaries (e.g. "India ...", "London ...")
-  const t2 = []; // KNOWN_CITIES match anywhere
-  const t3 = []; // Other normal matches
-  const t4 = []; // US Indiana cities or Indian Ocean islands fallback unless explicitly typed
+  const scored = [];
 
   zoneDataset.forEach(item => {
+    let score = 0;
     const dispLower = item.display.toLowerCase();
-    const isKnown = !!KNOWN_CITIES[item.id];
+    const idLower = item.id.toLowerCase();
+    const aliases = SEARCH_ALIASES[item.id] || [];
 
-    // Check for US Indiana cities or Indian Ocean territory
-    const isIndianaUs = item.id.startsWith("America/Indiana/");
-    const isIndianOcean = item.id.startsWith("Indian/");
+    // 1. Alias scoring (World Time Buddy style)
+    if (aliases.includes(query)) {
+      score += 500; // Perfect match for alias like "ist", "gmt", "india", "delhi", "london"
+    } else if (aliases.some(a => a.startsWith(query))) {
+      score += 300;
+    } else if (aliases.some(a => a.includes(query))) {
+      score += 150;
+    }
 
-    if (isKnown && (dispLower.includes(query) || item.searchKey.includes(query))) {
-      // High priority for curated primary cities
-      if (item.id === "Asia/Kolkata" && (query.includes("ind") || query.includes("ist") || query.includes("kol") || query.includes("del") || query.includes("mum"))) {
-        t0.unshift(item); // Put India (IST) at absolute top!
-      } else if (dispLower.startsWith(query) || item.searchKey.startsWith(query)) {
-        t0.push(item);
-      } else {
-        t2.push(item);
-      }
-    } else if (dispLower.startsWith(query) || dispLower.split(/[\s,()—]+/).some(w => w.startsWith(query))) {
-      if (isIndianaUs && !query.includes("indiana") && !query.includes("napolis")) {
-        t4.push(item);
-      } else if (isIndianOcean && !query.includes("ocean") && !query.includes("island")) {
-        t4.push(item);
-      } else {
-        t1.push(item);
-      }
-    } else if (item.searchKey.includes(query)) {
-      if ((isIndianaUs && !query.includes("indiana")) || (isIndianOcean && !query.includes("ocean"))) {
-        t4.push(item);
-      } else {
-        t3.push(item);
-      }
+    // 2. Display / Name scoring
+    if (dispLower.startsWith(query)) {
+      score += 200;
+    } else if (dispLower.split(/[\s,()—]+/).some(w => w.startsWith(query))) {
+      score += 100;
+    } else if (dispLower.includes(query)) {
+      score += 50;
+    }
+
+    // 3. ID / Search key scoring
+    if (idLower.includes(query)) {
+      score += 20;
+    }
+
+    // 4. Boost known primary cities
+    if (KNOWN_CITIES[item.id]) {
+      score += 30;
+    }
+
+    // 5. Penalty for US Indiana towns (America/Indiana/*) unless explicitly searching Indiana
+    if (item.id.startsWith("America/Indiana/") && !query.includes("indiana") && !query.includes("napolis")) {
+      score -= 300;
+    }
+
+    // 6. Penalty for Indian Ocean territories (Indian/*) unless explicitly searching ocean/island
+    if (item.id.startsWith("Indian/") && !query.includes("ocean") && !query.includes("island")) {
+      score -= 300;
+    }
+
+    if (score > 0) {
+      scored.push({ item, score });
     }
   });
 
-  // Deduplicate items keeping order
-  const resultsMap = new Map();
-  [...t0, ...t1, ...t2, ...t3, ...t4].forEach(item => {
-    if (!resultsMap.has(item.id)) {
-      resultsMap.set(item.id, item);
-    }
-  });
+  // Sort descending by score
+  scored.sort((a, b) => b.score - a.score);
 
-  return Array.from(resultsMap.values()).slice(0, 14);
+  return scored.map(s => s.item).slice(0, 14);
 }
 
 function renderAutocomplete(query) {
