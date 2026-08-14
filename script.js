@@ -1001,6 +1001,29 @@ Thank you for your cooperation.
 Best regards,
 Support Team
 Smavy Academy`
+  },
+  {
+    key: "smavy_app_intro",
+    label: "Parent — Smavy App introduction & download links",
+    fields: [],
+    build: () =>
+`Dear Parents,
+
+🌟 We’re excited to introduce the Smavy App 📱 to make managing your child’s classes easier and more convenient.
+
+With the app, you can:
+📌 Receive class updates & reminders
+📅 Check class schedules
+💬 Communicate with teachers regarding homework and assignments
+
+You can use your existing Smavy login credentials to sign in.
+
+📲 Android: https://play.google.com/store/apps/details?id=com.smavy.smavylms
+📲 iOS: https://apps.apple.com/in/app/smavy/id1613489851
+
+For any assistance, please feel free to contact us. 😊
+
+Thank you!`
   }
 ];
 
@@ -1025,7 +1048,8 @@ const CAT_MAP = {
   email_reminder_feedback: "guide",
   how_to_view_homework: "guide",
   how_to_upload_homework: "guide",
-  parent_late_cancellation: "parent"
+  parent_late_cancellation: "parent",
+  smavy_app_intro: "parent"
 };
 
 function renderTemplateList() {
