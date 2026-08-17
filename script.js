@@ -853,8 +853,7 @@ Smavy Academy`
       "Class Start Time",
       "Class End Time",
       "Class Duration",
-      "Discrepancy Reason",
-      "Meeting Link (If class is taken on Zoom or Google Meet)"
+      "Discrepancy Reason"
     ],
     build: f => {
       const getVal = key => (f[key] && f[key] !== `{${key}}`) ? " " + f[key] : "";
@@ -868,8 +867,8 @@ Class Start Time :${getVal("Class Start Time")}
 Class End Time :${getVal("Class End Time")}
 Class Duration :${getVal("Class Duration")}
 Discrepancy Reason :${getVal("Discrepancy Reason")}
-Meeting Link (If class is taken on Zoom or Google Meet) :${getVal("Meeting Link (If class is taken on Zoom or Google Meet)")}
-*Please fill this and revert after the session, Thankyou.*`;
+
+*Please fill this after the session and share with us mam, Thankyou.*`;
     }
   },
   {
